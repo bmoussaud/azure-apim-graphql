@@ -205,3 +205,7 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Bicep compiled ARM templates (keep .parameters.json files)
+infra/**/*.json
+!infra/**/*.parameters.json
