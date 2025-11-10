@@ -209,3 +209,6 @@ __marimo__/
 # Bicep compiled ARM templates (keep .parameters.json files)
 infra/**/*.json
 !infra/**/*.parameters.json
+
+# Azure Developer CLI (.azd)
+.azure/
