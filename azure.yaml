@@ -1,15 +1,5 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
 
 name: azure-apim-graphql
-metadata:
-  template: azure-apim-graphql@0.0.1-beta
 
-# Infrastructure configuration
-infra:
-  provider: bicep
-  path: infra
-  module: main
 
-# Pipeline configuration
-pipeline:
-  provider: github
