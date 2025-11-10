@@ -8,8 +8,8 @@ docker pull ghcr.io/modelcontextprotocol/inspector:latest
 curl -fsSL https://aka.ms/install-azd.sh | bash
 
 # Check if src/python directory exists, if not, skip the Python-specific setup
-if [ -d "src/python" ]; then
-    cd src/python
+if [ -d "github-graphql-sample" ]; then
+    cd github-graphql-sample
     # Create a fresh virtual environment using uv
     uv venv --clear
     source .venv/bin/activate
@@ -18,5 +18,5 @@ if [ -d "src/python" ]; then
     # Sync dependencies
     uv sync
 else
-    echo "Note: src/python directory not found. Skipping Python-specific setup."
+    echo "Note: github-graphql-sample directory not found. Skipping Python-specific setup."
 fi

@@ -38,7 +38,8 @@
 				"esbenp.prettier-vscode",
 				"ms-azuretools.vscode-docker",
 				"ms-python.autopep8",
-				"ms-windows-ai-studio.windows-ai-studio"
+				"ms-windows-ai-studio.windows-ai-studio",
+				"teticio.python-envy"
 			]
 		}
 	}
