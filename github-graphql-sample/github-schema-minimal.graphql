@@ -1,0 +1,99 @@
+
+"""GitHub GraphQL API Schema (Minimal)"""
+
+type Query {
+  """
+  Lookup a user by login.
+  """
+  user(login: String!): User
+  
+  """
+  The currently authenticated user.
+  """
+  viewer: User
+}
+
+"""
+A user is an individual's account on GitHub that owns repositories and can make new content.
+"""
+type User {
+  """
+  The user's public profile name.
+  """
+  name: String
+  
+  """
+  The username used to login.
+  """
+  login: String!
+  
+  """
+  The user's public profile email.
+  """
+  email: String
+  
+  """
+  The user's public profile bio.
+  """
+  bio: String
+  
+  """
+  A list of repositories that the user owns.
+  """
+  repositories(first: Int, after: String): RepositoryConnection
+}
+
+"""
+A list of repositories owned by the subject.
+"""
+type RepositoryConnection {
+  """
+  A list of nodes.
+  """
+  nodes: [Repository]
+  
+  """
+  Information to aid in pagination.
+  """
+  pageInfo: PageInfo
+}
+
+"""
+A repository contains the content for a project.
+"""
+type Repository {
+  """
+  The name of the repository.
+  """
+  name: String!
+  
+  """
+  The description of the repository.
+  """
+  description: String
+  
+  """
+  The HTTP URL for this repository
+  """
+  url: String!
+  
+  """
+  Identifies if the repository is private or internal.
+  """
+  isPrivate: Boolean!
+}
+
+"""
+Information about pagination in a connection.
+"""
+type PageInfo {
+  """
+  When paginating forwards, the cursor to continue.
+  """
+  endCursor: String
+  
+  """
+  When paginating forwards, are there more items?
+  """
+  hasNextPage: Boolean!
+}

@@ -18,9 +18,9 @@ from dotenv import load_dotenv
 class GitHubGraphQLClient:
     """Client for interacting with GitHub's GraphQL API."""
 
-    GITHUB_GRAPHQL_URL = "https://api.github.com/graphql"
+    
 
-    def __init__(self, token: str):
+    def __init__(self, token: str, api_url: Optional[str] = "https://api.github.com/graphql", extra_headers: Optional[Dict[str, str]] = None) -> None:
         """
         Initialize the GitHub GraphQL client.
 
@@ -32,6 +32,8 @@ class GitHubGraphQLClient:
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json",
         }
+        self.headers.update(extra_headers or {})
+        self.api_url = api_url
 
     def execute_query(
         self, query: str, variables: Optional[Dict[str, Any]] = None
@@ -54,7 +56,7 @@ class GitHubGraphQLClient:
             payload["variables"] = variables
 
         response = requests.post(
-            self.GITHUB_GRAPHQL_URL, headers=self.headers, json=payload, timeout=30
+            self.api_url, headers=self.headers, json=payload, timeout=30
         )
         response.raise_for_status()
 
@@ -314,10 +316,11 @@ Examples:
         print("You can copy .env.example to .env and add your token.", file=sys.stderr)
         sys.exit(1)
 
+    github_graphql_api_url = os.getenv("GITHUB_GRAPHQL_API_URL", "https://api.github.com/graphql")
+
     # Create GitHub GraphQL client
     try:
-        client = GitHubGraphQLClient(github_token)
-
+        client = GitHubGraphQLClient(github_token, api_url=github_graphql_api_url,extra_headers={"Ocp-Apim-Subscription-Key": os.getenv("GITHUB_APIM_SUBSCRIPTION_KEY")} if os.getenv("GITHUB_APIM_SUBSCRIPTION_KEY") else None)
         # Execute the requested command
         if args.command == "viewer":
             get_viewer_info(client)

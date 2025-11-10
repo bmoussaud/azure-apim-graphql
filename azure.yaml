@@ -2,4 +2,12 @@
 
 name: azure-apim-graphql
 
+infra:
+  provider: bicep
+  path: infra
+
+parameters:
+  githubToken:
+    secret: true
+
 

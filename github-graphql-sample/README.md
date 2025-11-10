@@ -32,16 +32,6 @@ cd github-graphql-sample
 uv sync
 ```
 
-Alternatively, if you prefer to use pip with a traditional virtual environment:
-
-```bash
-# For exact dependencies with locked versions
-pip install -r requirements.txt
-
-# Or for simple dependencies without version locks
-pip install -r requirements-simple.txt
-```
-
 ## Configuration
 
 1. Create a GitHub Personal Access Token:
