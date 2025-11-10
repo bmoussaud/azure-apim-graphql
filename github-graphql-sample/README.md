@@ -12,7 +12,8 @@ A command-line application demonstrating how to use GitHub's GraphQL API with pe
 
 ## Prerequisites
 
-- Python 3.7 or higher
+- Python 3.8 or higher
+- [uv](https://docs.astral.sh/uv/) package manager
 - GitHub Personal Access Token
 - Internet connection
 
@@ -24,10 +25,21 @@ A command-line application demonstrating how to use GitHub's GraphQL API with pe
 cd github-graphql-sample
 ```
 
-2. Install the required Python packages:
+2. Install dependencies using uv:
 
 ```bash
+# This will create a virtual environment and install all dependencies
+uv sync
+```
+
+Alternatively, if you prefer to use pip with a traditional virtual environment:
+
+```bash
+# For exact dependencies with locked versions
 pip install -r requirements.txt
+
+# Or for simple dependencies without version locks
+pip install -r requirements-simple.txt
 ```
 
 ## Configuration
@@ -56,13 +68,17 @@ GITHUB_TOKEN=ghp_your_actual_token_here
 
 ## Usage
 
-The application provides three main commands:
+The application provides three main commands. You can run them using either `uv run` (recommended) or `python` directly:
 
 ### 1. View Authenticated User Information
 
 Display information about the user associated with the GitHub token:
 
 ```bash
+# Using uv (recommended)
+uv run github_graphql_client.py viewer
+
+# Or using python directly
 python github_graphql_client.py viewer
 ```
 
@@ -87,17 +103,29 @@ Repositories: 8
 List the most recently updated repositories for a specific user:
 
 ```bash
+# Using uv (recommended)
+uv run github_graphql_client.py repos <username>
+
+# Or using python directly
 python github_graphql_client.py repos <username>
 ```
 
 You can also specify the number of repositories to display (default is 10):
 
 ```bash
+# Using uv (recommended)
+uv run github_graphql_client.py repos <username> --limit 5
+
+# Or using python directly
 python github_graphql_client.py repos <username> --limit 5
 ```
 
 **Example:**
 ```bash
+# Using uv
+uv run github_graphql_client.py repos octocat
+
+# Or using python
 python github_graphql_client.py repos octocat
 ```
 
@@ -120,11 +148,19 @@ Top 10 Repositories for octocat
 Display detailed information about a specific repository:
 
 ```bash
+# Using uv (recommended)
+uv run github_graphql_client.py repo <owner> <repository-name>
+
+# Or using python directly
 python github_graphql_client.py repo <owner> <repository-name>
 ```
 
 **Example:**
 ```bash
+# Using uv
+uv run github_graphql_client.py repo octocat Hello-World
+
+# Or using python
 python github_graphql_client.py repo octocat Hello-World
 ```
 
@@ -240,6 +276,50 @@ Make sure you've:
 - [GitHub GraphQL API Documentation](https://docs.github.com/en/graphql)
 - [GraphQL Official Documentation](https://graphql.org/learn/)
 - [GitHub GraphQL Explorer](https://docs.github.com/en/graphql/overview/explorer) - Interactive tool to test queries
+
+## Development
+
+This project uses `uv` for dependency management and includes development tools for code quality.
+
+### Setting Up for Development
+
+1. Install dependencies including development tools:
+
+```bash
+uv sync --dev
+```
+
+2. Run the code formatter:
+
+```bash
+uv run black github_graphql_client.py
+```
+
+3. Run the linter:
+
+```bash
+uv run flake8 github_graphql_client.py
+```
+
+4. Run tests (when available):
+
+```bash
+uv run pytest
+```
+
+### Adding New Dependencies
+
+To add a new runtime dependency:
+
+```bash
+uv add package-name
+```
+
+To add a new development dependency:
+
+```bash
+uv add --dev package-name
+```
 
 ## Contributing
 

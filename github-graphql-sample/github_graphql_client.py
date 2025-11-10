@@ -17,13 +17,13 @@ from dotenv import load_dotenv
 
 class GitHubGraphQLClient:
     """Client for interacting with GitHub's GraphQL API."""
-    
+
     GITHUB_GRAPHQL_URL = "https://api.github.com/graphql"
-    
+
     def __init__(self, token: str):
         """
         Initialize the GitHub GraphQL client.
-        
+
         Args:
             token: GitHub personal access token
         """
@@ -32,45 +32,44 @@ class GitHubGraphQLClient:
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json",
         }
-    
-    def execute_query(self, query: str, variables: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+
+    def execute_query(
+        self, query: str, variables: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
         """
         Execute a GraphQL query against GitHub's API.
-        
+
         Args:
             query: GraphQL query string
             variables: Optional variables for the query
-            
+
         Returns:
             Response data from the API
-            
+
         Raises:
             requests.RequestException: If the API request fails
         """
         payload = {"query": query}
         if variables:
             payload["variables"] = variables
-        
+
         response = requests.post(
-            self.GITHUB_GRAPHQL_URL,
-            headers=self.headers,
-            json=payload,
-            timeout=30
+            self.GITHUB_GRAPHQL_URL, headers=self.headers, json=payload, timeout=30
         )
         response.raise_for_status()
-        
+
         result = response.json()
-        
+
         if "errors" in result:
             raise Exception(f"GraphQL errors: {json.dumps(result['errors'], indent=2)}")
-        
+
         return result
 
 
 def get_viewer_info(client: GitHubGraphQLClient) -> None:
     """
     Fetch and display information about the authenticated user.
-    
+
     Args:
         client: GitHubGraphQLClient instance
     """
@@ -96,11 +95,11 @@ def get_viewer_info(client: GitHubGraphQLClient) -> None:
         }
     }
     """
-    
+
     print("Fetching authenticated user information...\n")
     result = client.execute_query(query)
     viewer = result["data"]["viewer"]
-    
+
     print(f"GitHub User Information")
     print(f"=" * 50)
     print(f"Username:     {viewer['login']}")
@@ -116,10 +115,12 @@ def get_viewer_info(client: GitHubGraphQLClient) -> None:
     print()
 
 
-def get_user_repositories(client: GitHubGraphQLClient, username: str, limit: int = 10) -> None:
+def get_user_repositories(
+    client: GitHubGraphQLClient, username: str, limit: int = 10
+) -> None:
     """
     Fetch and display repositories for a specific user.
-    
+
     Args:
         client: GitHubGraphQLClient instance
         username: GitHub username
@@ -146,29 +147,26 @@ def get_user_repositories(client: GitHubGraphQLClient, username: str, limit: int
         }
     }
     """
-    
-    variables = {
-        "username": username,
-        "limit": limit
-    }
-    
+
+    variables = {"username": username, "limit": limit}
+
     print(f"Fetching repositories for user '{username}'...\n")
     result = client.execute_query(query, variables)
-    
+
     user = result["data"]["user"]
     if not user:
         print(f"User '{username}' not found.")
         return
-    
+
     repositories = user["repositories"]["nodes"]
-    
+
     print(f"Top {len(repositories)} Repositories for {user['login']}")
     print(f"=" * 50)
-    
+
     for i, repo in enumerate(repositories, 1):
         language = repo["primaryLanguage"]["name"] if repo["primaryLanguage"] else "N/A"
         visibility = "Private" if repo["isPrivate"] else "Public"
-        
+
         print(f"\n{i}. {repo['name']} ({visibility})")
         print(f"   URL:         {repo['url']}")
         print(f"   Description: {repo.get('description', 'No description')}")
@@ -182,7 +180,7 @@ def get_user_repositories(client: GitHubGraphQLClient, username: str, limit: int
 def get_repository_info(client: GitHubGraphQLClient, owner: str, name: str) -> None:
     """
     Fetch and display detailed information about a specific repository.
-    
+
     Args:
         client: GitHubGraphQLClient instance
         owner: Repository owner
@@ -222,29 +220,30 @@ def get_repository_info(client: GitHubGraphQLClient, owner: str, name: str) -> N
         }
     }
     """
-    
-    variables = {
-        "owner": owner,
-        "name": name
-    }
-    
+
+    variables = {"owner": owner, "name": name}
+
     print(f"Fetching repository information for '{owner}/{name}'...\n")
     result = client.execute_query(query, variables)
-    
+
     repo = result["data"]["repository"]
     if not repo:
         print(f"Repository '{owner}/{name}' not found.")
         return
-    
+
     languages = [lang["name"] for lang in repo["languages"]["nodes"]]
-    primary_language = repo["primaryLanguage"]["name"] if repo["primaryLanguage"] else "N/A"
+    primary_language = (
+        repo["primaryLanguage"]["name"] if repo["primaryLanguage"] else "N/A"
+    )
     visibility = "Private" if repo["isPrivate"] else "Public"
-    
+
     print(f"Repository: {repo['name']} ({visibility})")
     print(f"=" * 50)
     print(f"URL:              {repo['url']}")
     print(f"Description:      {repo.get('description', 'No description')}")
-    print(f"Default Branch:   {repo['defaultBranchRef']['name'] if repo['defaultBranchRef'] else 'N/A'}")
+    print(
+        f"Default Branch:   {repo['defaultBranchRef']['name'] if repo['defaultBranchRef'] else 'N/A'}"
+    )
     print(f"Primary Language: {primary_language}")
     print(f"Languages:        {', '.join(languages) if languages else 'N/A'}")
     print(f"Stars:            {repo['stargazerCount']}")
@@ -272,45 +271,53 @@ Examples:
   
   # Get detailed repository info
   python github_graphql_client.py repo octocat Hello-World
-        """
+        """,
     )
-    
+
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
-    
+
     # Viewer command
     subparsers.add_parser("viewer", help="Show authenticated user information")
-    
+
     # Repositories command
     repos_parser = subparsers.add_parser("repos", help="List user repositories")
     repos_parser.add_argument("username", help="GitHub username")
-    repos_parser.add_argument("--limit", type=int, default=10, help="Number of repositories to show (default: 10)")
-    
+    repos_parser.add_argument(
+        "--limit",
+        type=int,
+        default=10,
+        help="Number of repositories to show (default: 10)",
+    )
+
     # Repository command
     repo_parser = subparsers.add_parser("repo", help="Show repository details")
     repo_parser.add_argument("owner", help="Repository owner")
     repo_parser.add_argument("name", help="Repository name")
-    
+
     args = parser.parse_args()
-    
+
     if not args.command:
         parser.print_help()
         sys.exit(1)
-    
+
     # Load environment variables from .env file
     load_dotenv()
-    
+
     # Get GitHub token from environment
     github_token = os.getenv("GITHUB_TOKEN")
     if not github_token:
         print("Error: GITHUB_TOKEN environment variable is not set.", file=sys.stderr)
-        print("Please create a .env file with your GitHub personal access token.", file=sys.stderr)
+        print(
+            "Please create a .env file with your GitHub personal access token.",
+            file=sys.stderr,
+        )
         print("You can copy .env.example to .env and add your token.", file=sys.stderr)
         sys.exit(1)
-    
+
     # Create GitHub GraphQL client
     try:
         client = GitHubGraphQLClient(github_token)
-        
+
         # Execute the requested command
         if args.command == "viewer":
             get_viewer_info(client)
@@ -318,7 +325,7 @@ Examples:
             get_user_repositories(client, args.username, args.limit)
         elif args.command == "repo":
             get_repository_info(client, args.owner, args.name)
-    
+
     except requests.RequestException as e:
         print(f"Error: API request failed: {e}", file=sys.stderr)
         sys.exit(1)
