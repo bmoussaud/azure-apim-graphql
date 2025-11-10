@@ -23,53 +23,55 @@ param apimSku string = 'Standard'
 @description('The capacity of the API Management instance')
 param apimCapacity int = 1
 
-@description('Environment name (e.g., dev, test, prod)')
-param environment string = 'dev'
+@minLength(1)
+@maxLength(64)
+@description('Name of the the environment which is used to generate a short unique hash used in all resources.')
+param environmentName string
 
 @description('Tags to apply to all resources')
 param tags object = {
-  Environment: environment
+  Environment: environmentName
   ManagedBy: 'Bicep'
 }
 
-// Generate unique resource names
-var appInsightsName = '${baseName}-ai-${environment}'
-var apimName = '${baseName}-apim-${environment}'
+#disable-next-line no-unused-vars
+var resourceToken = toLower(uniqueString(resourceGroup().id, environmentName, location))
 
-// Deploy Application Insights
-module appInsights 'modules/appInsights.bicep' = {
-  name: 'appInsights-deployment'
+module applicationInsights 'modules/app-insights.bicep' = {
+  name: 'application-insights'
   params: {
-    appInsightsName: appInsightsName
     location: location
+    workspaceName: logAnalyticsWorkspace.outputs.name
+    applicationInsightsName: 'app-insights-${resourceToken}'
     tags: tags
   }
 }
 
-// Deploy API Management
-module apim 'modules/apim.bicep' = {
-  name: 'apim-deployment'
+module logAnalyticsWorkspace 'modules/log-analytics-workspace.bicep' = {
+  name: 'log-analytics-workspace'
   params: {
-    apimName: apimName
     location: location
-    publisherEmail: publisherEmail
-    publisherName: publisherName
-    sku: apimSku
-    capacity: apimCapacity
+    logAnalyticsName: 'log-analytics-${resourceToken}'
     tags: tags
-    appInsightsId: appInsights.outputs.appInsightsId
-    appInsightsInstrumentationKey: appInsights.outputs.instrumentationKey
   }
 }
 
-@description('The name of the Application Insights instance')
-output appInsightsName string = appInsights.outputs.appInsightsName
+module apiManagement 'modules/api-management.bicep' = {
+  name: 'api-management'
+  params: {
+    location: location
+    tags: tags
+    serviceName: 'apim-${resourceToken}'
+    publisherName: 'GraphQL Apps'
+    publisherEmail: '${environmentName}@contososuites.com'
+    skuName: 'Basicv2'
+    skuCount: 1
+    aiName: applicationInsights.outputs.aiName
+  }
+}
 
-@description('The name of the API Management instance')
-output apimName string = apim.outputs.apimName
+output APIM_NAME string = apiManagement.outputs.name
+output APIM_GATEWAY_URL string = apiManagement.outputs.apiManagementProxyHostName
 
-@description('The gateway URL of the API Management instance')
-output apimGatewayUrl string = apim.outputs.apimGatewayUrl
-
-@description('The portal URL of the API Management instance')
-output apimPortalUrl string = apim.outputs.apimPortalUrl
+output OAUTH_TENANT_ID string = tenant().tenantId
+output SUBSCRIPTION_ID string = subscription().subscriptionId
