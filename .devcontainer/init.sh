@@ -1,0 +1,22 @@
+#!/bin/bash
+# Post-creation initialization script for the devcontainer
+
+# Pull the MCP inspector Docker image
+docker pull ghcr.io/modelcontextprotocol/inspector:latest
+
+# Install Azure Developer CLI (azd)
+curl -fsSL https://aka.ms/install-azd.sh | bash
+
+# Check if src/python directory exists, if not, skip the Python-specific setup
+if [ -d "src/python" ]; then
+    cd src/python
+    # Create a fresh virtual environment using uv
+    uv venv --clear
+    source .venv/bin/activate
+    # Get Azure environment values and save to .env
+    azd env get-values > .env
+    # Sync dependencies
+    uv sync
+else
+    echo "Note: src/python directory not found. Skipping Python-specific setup."
+fi
