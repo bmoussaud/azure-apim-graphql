@@ -16,13 +16,40 @@ This repository demonstrates how to integrate GitHub's GraphQL API with Azure AP
    - Click "Generate token"
    - **Important**: Copy the token immediately as you won't be able to see it again
 
-2. Edit `infra/main.parameters.json` to set value `githubToken`
-3. Trigger the provisioning using `azd provision`
+
+2. Trigger the provisioning using `azd provision`, the azd script will prompt for the the `githubToken` parameter
+
+```
+$ azd up
+  (✓) Done: Downloading Bicep
+? Select an Azure Subscription to use: 26. external-bmoussaud-ms (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)
+? Enter a value for the 'githubToken' infrastructure secured parameter: [? for help] *********************************************************************************************
+? Pick a resource group to use: 1. Create a new resource group
+? Select a location to create the resource group in: 51. (US) East US 2 (eastus2)
+? Enter a name for the new resource group: rg-graphql-dev
+
+Packaging services (azd package)
+
+
+Provisioning Azure resources (azd provision)
+Provisioning Azure resources can take some time.
+
+Subscription: external-xxxxxxxx-xx (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)
+
+  You can view detailed progress in the Azure Portal:
+  https://portal.azure.com/#view/HubsExtension/DeploymentDetailsBlade/~/overview/id/%2Fsubscriptions%2Fxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx%2FresourceGroups%2Frg-graphql-dev%2Fproviders%2FMicrosoft.Resources%2Fdeployments%2Fdev-1762943049
+
+  (✓) Done: Log Analytics workspace: log-analytics-tgebslojbs6y2 (20.864s)
+  (✓) Done: Application Insights: app-insights-tgebslojbs6y2 (4.46s)
+  (✓) Done: Azure API Management: apim-tgebslojbs6y2 (1m8.741s)
+
+```
 
 ### Testing Your GraphQL API
 
 0. **Settings**
 ```bash
+cd github-graphql-sample
 azd env get-values  > .env
 source .env
 ```

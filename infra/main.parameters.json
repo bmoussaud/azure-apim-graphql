@@ -4,9 +4,6 @@
   "parameters": {
     "environmentName": {
       "value": "${AZURE_ENV_NAME}"
-    },
-    "githubToken": {
-      "value": "github_pat_cxxxxxxxxx"
     }
   }
 }
