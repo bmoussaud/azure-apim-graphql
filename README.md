@@ -2,6 +2,8 @@
 
 This repository demonstrates how to integrate GitHub's GraphQL API with Azure API Management (APIM).
 
+![Azure API Management with GitHub GraphQL](./logo-apim-github.png)
+
 ## Configuration
 
 1. Create a GitHub Personal Access Token:
