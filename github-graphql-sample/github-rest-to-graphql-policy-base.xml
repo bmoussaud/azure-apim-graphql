@@ -1,0 +1,34 @@
+<!--
+    Manage API policie base
+-->
+<!-- Add policies as children to the <inbound>, <outbound>, <backend>, and <on-error> elements -->
+<policies>
+    <!-- Throttle, authorize, validate, cache, or transform the requests -->
+    <inbound>
+        <base />
+        <set-header name="Authorization" exists-action="override">
+            <value>@("Bearer " + "{{graphql-github-token}}")</value>
+        </set-header>
+        <set-header name="Content-Type" exists-action="override">
+            <value>application/json</value>
+        </set-header>
+        <set-method>POST</set-method>
+        <set-backend-service base-url="https://api.github.com" />
+        <rewrite-uri template="/graphql" />
+        <set-header name="0cp-Apim-Trace" exists-action="override">
+            <value>true</value>
+        </set-header>
+    </inbound>
+    <!-- Control if and how the requests are forwarded to services  -->
+    <backend>
+        <base />
+    </backend>
+    <!-- Customize the responses -->
+    <outbound>
+        <base />
+    </outbound>
+    <!-- Handle exceptions and customize error responses  -->
+    <on-error>
+        <base />
+    </on-error>
+</policies>

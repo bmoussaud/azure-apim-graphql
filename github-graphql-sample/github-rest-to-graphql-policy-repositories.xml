@@ -1,0 +1,130 @@
+<!-- 
+    Manage the path
+"/user/{username}/repositories": {
+            "get": {
+                "tags": ["github"],
+                "summary": "repositories",
+                "operationId": "repositories",
+                "parameters": [{
+                    "name": "username",
+                    "in": "path",
+                    "description": "github username ",
+                    "required": true,
+                    "schema": {
+                        "enum": ["bmoussaud"],
+                        "type": "string",
+                        "default": "bmoussaud"
+                    }
+                }],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        }
+-->
+<policies>
+    <!-- Throttle, authorize, validate, cache, or transform the requests -->
+    <inbound>
+        <base />
+        <!-- Extract username from path parameter -->
+        <set-variable name="username" value="@(context.Request.MatchedParameters["username"])" />
+        <set-variable name="limit" value="@(int.Parse(context.Request.Url.Query.GetValueOrDefault("limit", "10")))" />
+    
+        <set-body>@{
+            var username = (string)context.Variables["username"];
+            var limit = (int)context.Variables["limit"];
+            
+            var query = @"query($username: String!, $limit: Int!) {
+                user(login: $username) {
+                    login
+                    repositories(first: $limit, orderBy: {field: UPDATED_AT, direction: DESC}) {
+                        nodes {
+                            name
+                            description
+                            url
+                            stargazerCount
+                            forkCount
+                            isPrivate
+                            primaryLanguage {
+                                name
+                            }   
+                            updatedAt
+                        }
+                    }
+                }
+            }";
+            
+            var requestBody = new {
+                query = query,
+                variables = new {
+                    username = username,
+                    limit = limit
+                }
+            };
+            
+            return JsonConvert.SerializeObject(requestBody);
+        }
+        </set-body>
+    </inbound>
+    <backend>
+        <forward-request />
+    </backend>
+    <outbound>
+        <base />
+        <choose>
+            <when condition="@(context.Response.StatusCode == 200)">
+                <set-body>@{
+                    var responseBody = context.Response.Body.As<JObject>();
+                    
+                    if (responseBody["data"] != null && responseBody["data"]["user"] != null)
+                    {
+                        var repositories = responseBody["data"]["user"]["repositories"];
+                        return JsonConvert.SerializeObject(new { repositories = repositories });
+                    }
+                    else if (responseBody["errors"] != null)
+                    {
+                        return JsonConvert.SerializeObject(new { 
+                            error = "GraphQL Error",
+                            details = responseBody["errors"]
+                        });
+                    }
+                    else
+                    {
+                        return JsonConvert.SerializeObject(new { 
+                            error = "Unexpected response format",
+                            response = responseBody
+                        });
+                    }
+                }</set-body>
+            </when>
+            <otherwise>
+                <set-body>@{
+                    return JsonConvert.SerializeObject(new { 
+                        error = "GitHub API Error",
+                        statusCode = context.Response.StatusCode,
+                        statusReason = context.Response.StatusReason,
+                        body = context.Response.Body.As<string>()
+                    });
+                }</set-body>
+            </otherwise>
+        </choose>
+    </outbound>
+    <!-- Handle exceptions and customize error responses  -->
+    <on-error>
+        <base />
+        <set-body>@{
+            return JsonConvert.SerializeObject(new { 
+                error = "APIM Policy Error",
+                message = context.LastError?.Message,
+                source = context.LastError?.Source,
+                reason = context.LastError?.Reason,
+                scope = context.LastError?.Scope
+            });
+        }</set-body>
+        <set-header name="Content-Type" exists-action="override">
+            <value>application/json</value>
+        </set-header>
+    </on-error>
+</policies>
