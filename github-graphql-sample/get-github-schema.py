@@ -43,6 +43,9 @@ def get_github_graphql_schema(token: str) -> str:
         "Content-Type": "application/json",
         "User-Agent": "GraphQL Schema Fetcher"
     }
+
+    print("headers prepared for request.")
+    print(f"Headers: {headers}")
     
     payload = {"query": test_query}
     
