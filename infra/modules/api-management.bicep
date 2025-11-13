@@ -19,6 +19,9 @@ param skuName string
 @description('The number of worker instances of your API Management service that should be provisioned.')
 param skuCount int
 
+@description('The resource ID of the managed identity to be assigned to the API Management service instance.')
+param managedIdentityResourceId string
+
 param tags object = {}
 
 resource aiParent 'Microsoft.Insights/components@2020-02-02' existing = {
@@ -33,7 +36,10 @@ resource apiManagementService 'Microsoft.ApiManagement/service@2024-10-01-previe
     capacity: skuCount
   }
   identity: {
-    type: 'SystemAssigned'
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${managedIdentityResourceId}': {}
+    }
   }
   tags: tags
   properties: {
@@ -95,7 +101,7 @@ resource apiManagementService 'Microsoft.ApiManagement/service@2024-10-01-previe
 }
 
 //output apiManagementInternalIPAddress string = apiManagementService.properties.publicIPAddresses[0]
-output apiManagementIdentityPrincipalId string = apiManagementService.identity.principalId
+//output apiManagementIdentityPrincipalId string = apiManagementService.identity.principalId
 output name string = apiManagementService.name
 output apiManagementProxyHostName string = apiManagementService.properties.hostnameConfigurations[0].hostName
 //output apiManagementDeveloperPortalHostName string = replace(apiManagementService.properties.developerPortalUrl, 'https://', '')

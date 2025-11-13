@@ -57,12 +57,12 @@ input DefaultValue {
   LocalTime: LocalTime
 }
 
-"""Aggregation type for legrand_iot_data"""
-type legrand_iot_dataAggregations {
+"""Aggregation type for factory_iot_data"""
+type factory_iot_dataAggregations {
   """Maximum value for numeric fields"""
   max(
     """Field to aggregate on"""
-    field: legrand_iot_dataNumericAggregateFields!
+    field: factory_iot_dataNumericAggregateFields!
 
     """Filter criteria for aggregation"""
     having: FloatFilterInput
@@ -74,7 +74,7 @@ type legrand_iot_dataAggregations {
   """Minimum value for numeric fields"""
   min(
     """Field to aggregate on"""
-    field: legrand_iot_dataNumericAggregateFields!
+    field: factory_iot_dataNumericAggregateFields!
 
     """Filter criteria for aggregation"""
     having: FloatFilterInput
@@ -86,7 +86,7 @@ type legrand_iot_dataAggregations {
   """Average value"""
   avg(
     """Field to aggregate on"""
-    field: legrand_iot_dataNumericAggregateFields!
+    field: factory_iot_dataNumericAggregateFields!
 
     """Filter criteria for aggregation"""
     having: FloatFilterInput
@@ -98,7 +98,7 @@ type legrand_iot_dataAggregations {
   """Sum of values"""
   sum(
     """Field to aggregate on"""
-    field: legrand_iot_dataNumericAggregateFields!
+    field: factory_iot_dataNumericAggregateFields!
 
     """Filter criteria for aggregation"""
     having: FloatFilterInput
@@ -110,7 +110,7 @@ type legrand_iot_dataAggregations {
   """Count of numeric values"""
   count(
     """Field to aggregate on"""
-    field: legrand_iot_dataNumericAggregateFields!
+    field: factory_iot_dataNumericAggregateFields!
 
     """Filter criteria for aggregation"""
     having: FloatFilterInput
@@ -120,16 +120,16 @@ type legrand_iot_dataAggregations {
   ): Int
 }
 
-"""GroupBy type for legrand_iot_data"""
-type legrand_iot_dataGroupBy {
-  """Grouped fields from legrand_iot_data"""
-  fields: legrand_iot_data
+"""GroupBy type for factory_iot_data"""
+type factory_iot_dataGroupBy {
+  """Grouped fields from factory_iot_data"""
+  fields: factory_iot_data
 
-  """Aggregations for legrand_iot_data"""
-  aggregations: legrand_iot_dataAggregations
+  """Aggregations for factory_iot_data"""
+  aggregations: factory_iot_dataAggregations
 }
 
-type legrand_iot_data {
+type factory_iot_data {
   Timestamp: DateTime
   BuildingID: String
   DeviceID: String
@@ -145,13 +145,13 @@ type DbOperationResult {
   result: String
 }
 
-"""Fields available for aggregation in legrand_iot_data"""
-enum legrand_iot_dataNumericAggregateFields {
+"""Fields available for aggregation in factory_iot_data"""
+enum factory_iot_dataNumericAggregateFields {
   Value
 }
 
-"""Scalar fields available in legrand_iot_data"""
-enum legrand_iot_dataScalarFields {
+"""Scalar fields available in factory_iot_data"""
+enum factory_iot_dataScalarFields {
   Timestamp
   BuildingID
   DeviceID
@@ -162,8 +162,8 @@ enum legrand_iot_dataScalarFields {
   Status
 }
 
-"""Order by input for legrand_iot_data GraphQL type"""
-input legrand_iot_dataOrderByInput {
+"""Order by input for factory_iot_data GraphQL type"""
+input factory_iot_dataOrderByInput {
   """Order by options for Timestamp"""
   Timestamp: OrderBy
 
@@ -270,8 +270,8 @@ input FloatFilterInput {
   in: [Float]
 }
 
-"""Filter input for legrand_iot_data GraphQL type"""
-input legrand_iot_dataFilterInput {
+"""Filter input for factory_iot_data GraphQL type"""
+input factory_iot_dataFilterInput {
   """Filter options for Timestamp"""
   Timestamp: DateTimeFilterInput
 
@@ -297,18 +297,18 @@ input legrand_iot_dataFilterInput {
   Status: StringFilterInput
 
   """Conditions to be treated as AND operations"""
-  and: [legrand_iot_dataFilterInput]
+  and: [factory_iot_dataFilterInput]
 
   """Conditions to be treated as OR operations"""
-  or: [legrand_iot_dataFilterInput]
+  or: [factory_iot_dataFilterInput]
 }
 
 """
 The return object from a filter query that supports a pagination token for paging through results
 """
-type legrand_iot_dataConnection {
+type factory_iot_dataConnection {
   """The list of items that matched the filter"""
-  items: [legrand_iot_data!]!
+  items: [factory_iot_data!]!
 
   """A pagination token to provide to subsequent pages of a query"""
   endCursor: String
@@ -319,13 +319,13 @@ type legrand_iot_dataConnection {
   """Group results by specified fields"""
   groupBy(
     """Fields to group by"""
-    fields: [legrand_iot_dataScalarFields!]
-  ): [legrand_iot_dataGroupBy!]!
+    fields: [factory_iot_dataScalarFields!]
+  ): [factory_iot_dataGroupBy!]!
 }
 
 type Query {
-  """Get a list of all the legrand_iot_data items from the database"""
-  legrand_iot_datas(
+  """Get a list of all the factory_iot_data items from the database"""
+  factory_iot_datas(
     """The number of items to return from the page start point"""
     first: Int
 
@@ -335,11 +335,11 @@ type Query {
     after: String
 
     """Filter options for query"""
-    filter: legrand_iot_dataFilterInput
+    filter: factory_iot_dataFilterInput
 
     """Ordering options for query"""
-    orderBy: legrand_iot_dataOrderByInput
-  ): legrand_iot_dataConnection!
+    orderBy: factory_iot_dataOrderByInput
+  ): factory_iot_dataConnection!
 }
 
 """Defines when a policy shall be executed."""

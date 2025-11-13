@@ -9,7 +9,8 @@ import json
 # For production, always register an application in a Microsoft Entra ID tenant and use the appropriate client_id and scopes
 # https://learn.microsoft.com/en-us/fabric/data-engineering/connect-apps-api-graphql#create-a-microsoft-entra-app
  
-app = AzureDeveloperCliCredential(tenant_id="de0dfa5c-3de9-4321-90aa-13727d0ca0b4")
+#app = AzureDeveloperCliCredential(tenant_id="de0dfa5c-3de9-4321-90aa-13727d0ca0b4")
+app = InteractiveBrowserCredential()
 scp = 'https://analysis.windows.net/powerbi/api/user_impersonation'
 result = app.get_token(scp)
 print("Access token acquired.")
@@ -25,34 +26,20 @@ headers = {
 }
  
 endpoint = 'https://f8266fef6a6b42e7aed3e2c8d8b4ab75.zf8.graphql.fabric.microsoft.com/v1/workspaces/f8266fef-6a6b-42e7-aed3-e2c8d8b4ab75/graphqlapis/245e939b-f666-40db-8d53-be4996c1030b/graphql'
+endpoint='https://apim-tgebslojbs6y2.azure-api.net/fabric-graphql'
+endpoint = 'https://cb0442cc43ea4c819fea0bba9b62f870.zcb.graphql.fabric.microsoft.com/v1/workspaces/cb0442cc-43ea-4c81-9fea-0bba9b62f870/graphqlapis/64f58335-5d12-441d-b5e5-51778048a084/graphql'
+
 query = """
     query {
-        legrand_iot_datas(first: 10) {
-            items {
-            Timestamp
-            BuildingID
-            DeviceID
-            Location
-            MetricType
-            Value
-            Unit
-            Status
-            }
-            hasNextPage
-            endCursor
-        }
+  factory_iot_datas(first: 10) {
+     items {
+        Timestamp
+        DeviceID
+     }
   }
 }
 """
 
-query = """
-    query {
-    legrand_energy_aggregateds(first: 10) {
-        items {
-            AggregationTimestamp
-        }
-    }
-    }"""
 
 test_query = """
     query {
@@ -73,6 +60,8 @@ variables = {
  
   }
 
+print(query)
+print(endpoint)
  
 # Issue GraphQL request
 try:

@@ -1,7 +1,7 @@
 [project]
-name = "github-graphql-sample"
+name = "fabriq-graphql-sample"
 version = "0.1.0"
-description = "A command-line application demonstrating how to use GitHub's GraphQL API with personal access token authentication"
+description = "A command-line application demonstrating how to use Azure Fabriq GraphQL API with SSO  authentication"
 readme = "README.md"
 requires-python = ">=3.8"
 authors = [
@@ -21,7 +21,8 @@ classifiers = [
 ]
 dependencies = [
     "python-dotenv>=1.0.0",
-    "requests>=2.31.0"
+    "requests>=2.31.0",
+    "azure-identity>=1.13.0",
 ]
 
 [project.scripts]

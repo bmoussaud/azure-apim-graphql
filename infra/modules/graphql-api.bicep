@@ -70,16 +70,33 @@ resource apimApi 'Microsoft.ApiManagement/service/apis@2024-06-01-preview' = {
   }
 }
 
-resource graphqlGithubToken 'Microsoft.ApiManagement/service/namedValues@2024-06-01-preview' = {
-  name: 'graphql-github-token'
-  parent: apimService
-  properties: {
-    displayName: 'graphql-github-token'
-    value: api.githubToken
-    secret: true
-    tags: []
+
+resource namedValues 'Microsoft.ApiManagement/service/namedValues@2024-06-01-preview' = [
+  for namedValueName in items(api.namedValues ?? {}): {
+    name: namedValueName.key
+    parent: apimService
+    properties: {
+      displayName: namedValueName.key
+      value: namedValueName.value
+      secret: false
+      tags: []
+    }
   }
-}
+]
+
+
+resource secretNamedValues 'Microsoft.ApiManagement/service/namedValues@2024-06-01-preview' = [
+  for namedValueName in items(api.secretNamedValues ?? {}): {
+    name: namedValueName.key
+    parent: apimService
+    properties: {
+      displayName: namedValueName.key
+      value: namedValueName.value
+      secret: true
+      tags: []
+    }
+  }
+]
 
 
 resource graphqlSchema 'Microsoft.ApiManagement/service/apis/schemas@2024-10-01-preview' = {

@@ -109,6 +109,36 @@ query {
 }
 ```
 
+## Integrate Fabric GraphQL endpoint in APIM
+
+### Configure Fabrik
+1. Create a new Lakehouse, Load the data (`fabriq-graphql/factory_iot_data.csv`) and transform them into a table
+2. Create a new `API For GraphQL` item, bind it to the table.
+3. At the workspace level,using the `Manage Acess` menu; assign the managed identity as a contributor of the workspace.
+3. Copy the endpoint and set value in infra/main.parameters.json
+```json
+   "fabricGraphQLEndpoint": {
+      "value": "https://cb0442cc43ea4c819fea0bba9b62f870.zcb.graphql.fabric.microsoft.com/v1/workspaces/cb0442cc-43ea-4c81-9fea-0bba9b62f870/graphqlapis/64f58335-5d12-441d-b5e5-51778048a084/graphql"
+    }
+```
+4. Trigger `azd provision` to update the Azure APIM Configuration
+
+### Test
+
+```bash
+cd fabriq-graphql
+uv venv
+source .venv/bin/activate
+azd env get-values > .env
+uv run fabric_graphql_apim.py 
+```
+ 
+Documentation:
+* https://learn.microsoft.com/en-us/fabric/data-engineering/get-started-api-graphql
+* https://learn.microsoft.com/en-us/fabric/data-engineering/api-graphql-azure-api-management
+
+
+
 ## 📚 Additional Resources
 
 - [GitHub GraphQL API Documentation](https://docs.github.com/en/graphql)

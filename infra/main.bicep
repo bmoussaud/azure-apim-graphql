@@ -10,6 +10,9 @@ param environmentName string
 @secure()
 param githubToken string
 
+@description('Fabric GraphQL Endpoint URL')
+param fabricGraphQLEndpoint string = 'https://path-to-fabric-graphql-endpoint/graphql'
+
 @description('Tags to apply to all resources')
 param tags object = {
   Environment: environmentName
@@ -18,6 +21,12 @@ param tags object = {
 
 #disable-next-line no-unused-vars
 var resourceToken = toLower(uniqueString(resourceGroup().id, environmentName, location))
+
+resource apimManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2024-11-30' = {
+  name: 'apim-mi-${resourceToken}'
+  location: location
+}
+
 
 module applicationInsights 'modules/app-insights.bicep' = {
   name: 'application-insights'
@@ -49,6 +58,7 @@ module apiManagement 'modules/api-management.bicep' = {
     skuName: 'Basicv2'
     skuCount: 1
     aiName: applicationInsights.outputs.aiName
+    managedIdentityResourceId: apimManagedIdentity.id
   }
 }
 
@@ -69,11 +79,43 @@ module githubGraphqlApi 'modules/graphql-api.bicep' = {
       tags: ['github', 'api', 'graphql']
       policyXml: loadTextContent('../github-graphql-sample/github-graphql-policy.xml')
       schema: loadTextContent('../github-graphql-sample/github-schema-minimal.graphql')
-      githubToken: githubToken
+      namedValues: {}
+      secretNamedValues: {
+        'github-graphql-token': githubToken
+      }
     }
     
   }
 }
+
+
+
+module fabricGraphqlApi 'modules/graphql-api.bicep' = {
+  name: 'fabric-graphql-api'
+  params: {
+    apimName: apiManagement.outputs.name
+    appInsightsId: applicationInsights.outputs.aiId
+    appInsightsInstrumentationKey: applicationInsights.outputs.instrumentationKey
+    
+    api: {
+      name: 'fabric-graphql-api'
+      description: 'Fabric Factory GraphQL API'
+      displayName: 'Fabric Factory GraphQL API'
+      path: '/fabric-graphql'
+      serviceUrl: fabricGraphQLEndpoint
+      subscriptionRequired: true
+      tags: ['fabric', 'api', 'graphql','factory']
+      policyXml: loadTextContent('../fabriq-graphql/fabric-graphql-policy.xml')
+      schema: loadTextContent('../fabriq-graphql/factory_schema.graphql')
+      namedValues: {
+        'managed_identity_client_id': apimManagedIdentity.properties.clientId
+      }
+      secretNamedValues: {}
+    }
+    
+  }
+}
+
 
 output APIM_NAME string = apiManagement.outputs.name
 output APIM_GATEWAY_URL string = apiManagement.outputs.apiManagementProxyHostName
@@ -82,3 +124,6 @@ output GITHUB_GRAPHQL_API_URL string = 'https://${apiManagement.outputs.apiManag
 output OAUTH_TENANT_ID string = tenant().tenantId
 output SUBSCRIPTION_ID string = subscription().subscriptionId
 output GITHUB_TOKEN string = githubToken
+output FABRIC_GRAPHQL_API_URL string = 'https://${apiManagement.outputs.apiManagementProxyHostName}/${fabricGraphqlApi.outputs.apiPath}'
+output FABRIC_ENDPOINT string = fabricGraphQLEndpoint
+output FABRIC_APIM_SUBSCRIPTION_KEY string = fabricGraphqlApi.outputs.subscriptionPrimaryKey
