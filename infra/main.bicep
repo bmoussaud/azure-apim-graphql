@@ -142,6 +142,32 @@ module fabricGraphqlApi 'modules/graphql-api.bicep' = {
   }
 }
 
+module fabricbRest2GraphqlApi 'modules/api.bicep' = {
+  name: 'fabric-rest-to-graphql-api'
+  params: {
+    apimName: apiManagement.outputs.name
+    appInsightsId: applicationInsights.outputs.aiId
+    appInsightsInstrumentationKey: applicationInsights.outputs.instrumentationKey
+    
+    api: {
+      name: 'fabric-rest-to-graphql-api'
+      description: 'Rest to GraphQL Fabric API'
+      displayName: 'Rest to GraphQL Fabric API'
+      path: '/fabric-rest-to-graphql'
+      serviceUrl: 'https://api.github.com/graphql'
+      subscriptionRequired: true
+      tags: ['fabric', 'api', 'rest']
+      policyXml: loadTextContent('../fabric-rest-2-graphql/fabric-rest-to-graphql-policy-base.xml')
+      value: loadTextContent('../fabric-rest-2-graphql/swagger.json')
+      namedValues: {
+        managedIdentityClientId: apimManagedIdentity.properties.clientId
+      }
+      secretNamedValues: {}
+    }
+    
+  }
+}
+
 
 output APIM_NAME string = apiManagement.outputs.name
 output APIM_GATEWAY_URL string = apiManagement.outputs.apiManagementProxyHostName

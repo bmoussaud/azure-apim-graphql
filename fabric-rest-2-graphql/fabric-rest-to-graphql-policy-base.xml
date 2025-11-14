@@ -2,7 +2,7 @@
     <!-- Throttle, authorize, validate, cache, or transform the requests -->
     <inbound>
         <base />
-        <authentication-managed-identity resource="https://analysis.windows.net/powerbi/api" client-id="{{managed_identity_client_id}}" output-token-variable-name="token-variable" ignore-error="false" />
+        <authentication-managed-identity resource="https://analysis.windows.net/powerbi/api" client-id="{{managedIdentityClientId}}" output-token-variable-name="token-variable" ignore-error="false" />
         <set-header name="Authorization" exists-action="override">
             <value>@("Bearer " + (string)context.Variables["token-variable"])</value>
         </set-header>
