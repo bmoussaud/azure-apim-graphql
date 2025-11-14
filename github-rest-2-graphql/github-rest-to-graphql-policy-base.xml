@@ -1,7 +1,3 @@
-<!--
-    Manage API policie base
--->
-<!-- Add policies as children to the <inbound>, <outbound>, <backend>, and <on-error> elements -->
 <policies>
     <!-- Throttle, authorize, validate, cache, or transform the requests -->
     <inbound>
@@ -17,6 +13,9 @@
         <rewrite-uri template="/graphql" />
         <set-header name="0cp-Apim-Trace" exists-action="override">
             <value>true</value>
+        </set-header>
+        <set-header name="User-Agent" exists-action="override">
+            <value>azure-apim-graphql-sample</value>
         </set-header>
     </inbound>
     <!-- Control if and how the requests are forwarded to services  -->

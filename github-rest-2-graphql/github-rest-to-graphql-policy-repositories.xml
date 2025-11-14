@@ -31,7 +31,6 @@
         <!-- Extract username from path parameter -->
         <set-variable name="username" value="@(context.Request.MatchedParameters["username"])" />
         <set-variable name="limit" value="@(int.Parse(context.Request.Url.Query.GetValueOrDefault("limit", "10")))" />
-    
         <set-body>@{
             var username = (string)context.Variables["username"];
             var limit = (int)context.Variables["limit"];
@@ -65,8 +64,7 @@
             };
             
             return JsonConvert.SerializeObject(requestBody);
-        }
-        </set-body>
+        }</set-body>
     </inbound>
     <backend>
         <forward-request />

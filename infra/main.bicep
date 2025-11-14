@@ -88,6 +88,32 @@ module githubGraphqlApi 'modules/graphql-api.bicep' = {
   }
 }
 
+module githubRest2GraphqlApi 'modules/api.bicep' = {
+  name: 'github-rest-to-graphql-api'
+  params: {
+    apimName: apiManagement.outputs.name
+    appInsightsId: applicationInsights.outputs.aiId
+    appInsightsInstrumentationKey: applicationInsights.outputs.instrumentationKey
+    
+    api: {
+      name: 'github-rest-to-graphql-api'
+      description: 'Rest to GraphQL Github API'
+      displayName: 'Rest to GraphQL Github API'
+      path: '/github-rest-to-graphql'
+      serviceUrl: 'https://api.github.com/graphql'
+      subscriptionRequired: true
+      tags: ['github', 'api', 'rest']
+      policyXml: loadTextContent('../github-rest-2-graphql/github-rest-to-graphql-policy-base.xml')
+      value: loadTextContent('../github-rest-2-graphql/swagger.json')
+      namedValues: {}
+      secretNamedValues: {
+        'github-graphql-token': githubToken
+      }
+    }
+    
+  }
+}
+
 
 
 module fabricGraphqlApi 'modules/graphql-api.bicep' = {

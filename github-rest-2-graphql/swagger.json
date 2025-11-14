@@ -1,0 +1,55 @@
+{
+    "openapi": "3.0.1",
+    "info": {
+        "title": "Github Rest",
+        "description": "",
+        "version": "1.0"
+    },
+    "servers": [{
+        "url": "https://apim-tgebslojbs6y2.azure-api.net/github-rest"
+    }],
+    "paths": {
+        "/user/{username}/repositories": {
+            "get": {
+                "tags": ["github"],
+                "summary": "repositories",
+                "operationId": "repositories",
+                "parameters": [{
+                    "name": "username",
+                    "in": "path",
+                    "description": "github username ",
+                    "required": true,
+                    "schema": {
+                        "enum": ["bmoussaud"],
+                        "type": "string",
+                        "default": "bmoussaud"
+                    }
+                }],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "apiKeyHeader": {
+                "type": "apiKey",
+                "name": "Ocp-Apim-Subscription-Key",
+                "in": "header"
+            },
+            "apiKeyQuery": {
+                "type": "apiKey",
+                "name": "subscription-key",
+                "in": "query"
+            }
+        }
+    },
+    "security": [{
+        "apiKeyHeader": []
+    }, {
+        "apiKeyQuery": []
+    }]
+}
