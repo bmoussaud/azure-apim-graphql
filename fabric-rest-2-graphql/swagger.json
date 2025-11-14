@@ -1,0 +1,43 @@
+{
+    "openapi": "3.0.1",
+    "info": {
+        "title": "Factory Rest",
+        "description": "",
+        "version": "1.0"
+    },
+    "servers": [{
+        "url": "https://apim-tgebslojbs6y2.azure-api.net/factory-rest"
+    }],
+    "paths": {
+        "/sensors": {
+            "get": {
+                "summary": "sensors",
+                "operationId": "sensors",
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "apiKeyHeader": {
+                "type": "apiKey",
+                "name": "Ocp-Apim-Subscription-Key",
+                "in": "header"
+            },
+            "apiKeyQuery": {
+                "type": "apiKey",
+                "name": "subscription-key",
+                "in": "query"
+            }
+        }
+    },
+    "security": [{
+        "apiKeyHeader": []
+    }, {
+        "apiKeyQuery": []
+    }]
+}

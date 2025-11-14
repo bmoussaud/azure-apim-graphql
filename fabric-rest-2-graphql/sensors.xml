@@ -1,0 +1,77 @@
+
+<policies>
+
+    <inbound>
+        <base />
+        <set-body>@{
+            
+            var query = @"query {
+                factory_iot_datas(first: 10) {
+                    items {
+                        Timestamp
+                        BuildingID
+                        DeviceID
+
+                    }
+                }
+            }";
+            
+            var requestBody = new {
+                query = query,
+                variables = new { 
+                }
+            };
+            
+            return JsonConvert.SerializeObject(requestBody);
+        }</set-body>
+    </inbound>
+    <!-- Control if and how the requests are forwarded to services  -->
+    <backend>
+        <base />
+    </backend>
+    <!-- Customize the responses -->
+    <outbound>
+        <base />
+        <choose>
+            <when condition="@(context.Response.StatusCode == 200)">
+                <set-body>@{
+                    var responseBody = context.Response.Body.As<JObject>();
+                    
+                    if (responseBody["data"] != null && responseBody["data"]["factory_iot_datas"] != null)
+                    {
+                        var items = responseBody["data"]["factory_iot_datas"]["items"];
+                        return JsonConvert.SerializeObject(new { sensors = items });
+                    }
+                    else if (responseBody["errors"] != null)
+                    {
+                        return JsonConvert.SerializeObject(new { 
+                            error = "GraphQL Error",
+                            details = responseBody["errors"]
+                        });
+                    }
+                    else
+                    {
+                        return JsonConvert.SerializeObject(new { 
+                            error = "Unexpected response format",
+                            response = responseBody
+                        });
+                    }
+                }</set-body>
+            </when>
+            <otherwise>
+                <set-body>@{
+                    return JsonConvert.SerializeObject(new { 
+                        error = "Fabric API Error",
+                        statusCode = context.Response.StatusCode,
+                        statusReason = context.Response.StatusReason,
+                        body = context.Response.Body.As<string>()
+                    });
+                }</set-body>
+            </otherwise>
+        </choose>
+    </outbound>
+    <!-- Handle exceptions and customize error responses  -->
+    <on-error>
+        <base />
+    </on-error>
+</policies>
