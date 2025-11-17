@@ -24,33 +24,23 @@ resource apimService 'Microsoft.ApiManagement/service@2024-06-01-preview' existi
 resource apimApi 'Microsoft.ApiManagement/service/apis@2024-06-01-preview' existing = {
   name: apiName
   parent: apimService
- 
 }
 
-// https://learn.microsoft.com/azure/templates/microsoft.apimanagement/service/apis/policies
-resource apiPolicy 'Microsoft.ApiManagement/service/apis/policies@2024-06-01-preview' =  {
-  name: 'policy'
+resource operation 'Microsoft.ApiManagement/service/apis/operations@2022-04-01-preview' existing = {
+  name: operationName
   parent: apimApi
+}
+
+
+// NEW: operation-level policy
+resource operationPolicy 'Microsoft.ApiManagement/service/apis/operations/policies@2022-04-01-preview' = {
+  name: 'policy'
+  parent: operation
   properties: {
-    
-    format: 'rawxml' // only use 'rawxml' for policies as it's what APIM expects and means we don't need to escape XML characters
+    format: 'rawxml'
     value: policyXml
   }
 }
 
-// ------------------------------
-//    OUTPUTS
-// ------------------------------
 
-@description('The resource ID of the created API.')
-output apiResourceId string = apimApi.id
-
-@description('The name of the created API.')
-output apiName string = apimApi.name
-
-@description('The display name of the created API.')
-output apiDisplayName string = apimApi.properties.displayName
-
-@description('The path of the created API.')
-output apiPath string = apimApi.properties.path
 

@@ -168,6 +168,17 @@ Documentation:
 * https://learn.microsoft.com/en-us/fabric/data-engineering/api-graphql-azure-api-management
 
 
+### Fabric Rest to GraphQL
+
+The files in `fabric-rest-2-graphql` folder declare and implement two REST operations on sensors:
+
+#### API Operations
+
+- **GET `/sensors`**: Returns a list of available sensors. This endpoint retrieves sensor records from the underlying Fabric GraphQL API and is typically used to browse or list sensors and their metadata.
+- **GET `/sensors/{deviceid}`**: Returns details for a single sensor identified by its `deviceid`. This endpoint looks up a specific sensor and returns its details (for example, timestamp, building identifier, and device identifier). Internally, the REST call is translated into a filtered GraphQL query against the Fabric API.
+
+Both endpoints require an API key provided via the `Ocp-Apim-Subscription-Key` header or query string, as configured in Azure API Management.
+
 
 ## 📚 Additional Resources
 

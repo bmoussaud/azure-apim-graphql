@@ -11,3 +11,8 @@ parameters:
     secret: true
 
 
+hooks:
+  postprovision:
+    # Execute the root script to generate MCP JSON artifacts after infra is provisioned.
+    - shell: sh
+      run: ./hooks/gen_mcp_json.sh

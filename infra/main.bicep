@@ -169,14 +169,36 @@ module fabricbRest2GraphqlApi 'modules/api.bicep' = {
   }
 }
 
+module sensorsOperation 'modules/policy.bicep' = {
+  name: 'sensors-operation-policy'
+  params: {
+    apimName: apiManagement.outputs.name
+    apiName: fabricbRest2GraphqlApi.outputs.apiName 
+    operationName: 'sensors'
+    policyXml: loadTextContent('../fabric-rest-2-graphql/fabric-rest-to-graphql-policy-base-sensors.xml')
+  }
+}
 
-output APIM_NAME string = apiManagement.outputs.name
+module sensorDetailOperation 'modules/policy.bicep' = {
+  name: 'sensor-operation-policy'
+  params: {
+    apimName: apiManagement.outputs.name
+    apiName: fabricbRest2GraphqlApi.outputs.apiName
+    operationName: 'sensor'
+    policyXml: loadTextContent('../fabric-rest-2-graphql/fabric-rest-to-graphql-policy-base-sensors-details.xml')
+  }
+}
+
 output APIM_GATEWAY_URL string = apiManagement.outputs.apiManagementProxyHostName
+output APIM_NAME string = apiManagement.outputs.name
+output FABRIC_ENDPOINT string = fabricGraphQLEndpoint
+output FABRIC_GRAPHQL_API_URL string = 'https://${apiManagement.outputs.apiManagementProxyHostName}/${fabricGraphqlApi.outputs.apiPath}'
+output FABRIC_GRAPQL_APIM_SUBSCRIPTION_KEY string = fabricGraphqlApi.outputs.subscriptionPrimaryKey
+output FABRIC_MCP_ENDPOINT string = 'https://${apiManagement.outputs.apiManagementProxyHostName}/sensors-mcp/mcp'
+output FABRIC_REST_API_URL string = 'https://${apiManagement.outputs.apiManagementProxyHostName}/${fabricbRest2GraphqlApi.outputs.apiPath}'
+output FABRIC_REST_APIM_SUBSCRIPTION_KEY string = fabricbRest2GraphqlApi.outputs.subscriptionPrimaryKey
 output GITHUB_APIM_SUBSCRIPTION_KEY string = githubGraphqlApi.outputs.subscriptionPrimaryKey
 output GITHUB_GRAPHQL_API_URL string = 'https://${apiManagement.outputs.apiManagementProxyHostName}/${githubGraphqlApi.outputs.apiPath}'
+output GITHUB_TOKEN string = githubToken
 output OAUTH_TENANT_ID string = tenant().tenantId
 output SUBSCRIPTION_ID string = subscription().subscriptionId
-output GITHUB_TOKEN string = githubToken
-output FABRIC_GRAPHQL_API_URL string = 'https://${apiManagement.outputs.apiManagementProxyHostName}/${fabricGraphqlApi.outputs.apiPath}'
-output FABRIC_ENDPOINT string = fabricGraphQLEndpoint
-output FABRIC_APIM_SUBSCRIPTION_KEY string = fabricGraphqlApi.outputs.subscriptionPrimaryKey
