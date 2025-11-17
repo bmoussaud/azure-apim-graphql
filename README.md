@@ -111,7 +111,7 @@ query {
 
 ## Integrate Fabric GraphQL endpoint in APIM
 
-### Configure Fabrik
+### Configure Fabric
 1. Create a new Lakehouse, Load the data (`fabriq-graphql/factory_iot_data.csv`) and transform them into a table
 2. Create a new `API For GraphQL` item, bind it to the table.
 3. At the workspace level,using the `Manage Acess` menu; assign the managed identity as a contributor of the workspace.
@@ -126,12 +126,42 @@ query {
 ### Test
 
 ```bash
-cd fabriq-graphql
+cd fabric-graphql
 uv venv
 source .venv/bin/activate
 azd env get-values > .env
 uv run fabric_graphql_apim.py 
 ```
+
+The output should look like
+``` 
+Using FABRIC_GRAPHQL_API_URL: https://apim-tgebslojbs6y2.azure-api.net/fabric-graphql
+
+query {
+  factory_iot_datas(first: 10) {
+     items {
+        Timestamp
+        BuildingID
+        DeviceID
+
+     }
+  }
+}
+
+Making request to: https://apim-tgebslojbs6y2.azure-api.net/fabric-graphql
+Headers: {'Content-Type': 'application/json', 'Ocp-Apim-Subscription-Key': '4a33de485f7c432f9192a9a19cd1a79b'}
+Response status code: 200
+Response headers: {'Content-Type': 'text/plain; charset=utf-8', 'Date': 'Mon, 17 Nov 2025 08:25:46 GMT', 'Access-Control-Expose-Headers': 'x-ms-latency,RequestId', 'Transfer-Encoding': 'chunked', 'Strict-Transport-Security': 'max-age=31536000; includeSubDomains', 'x-ms-latency': 'overhead=1729;queryEngine=10080', 'x-ms-routing-hint': 'host001_graphql-006', 'x-ms-workload-resource-moniker': '64f58335-5d12-441d-b5e5-51778048a084', 'x-ms-root-activity-id': '31f510dd-fe75-45c1-a077-855e4dca8f2d', 'x-ms-current-utc-date': '11/17/2025 8:25:35 AM', 'X-Frame-Options': 'deny', 'X-Content-Type-Options': 'nosniff', 'request-redirected': 'true', 'home-cluster-uri': 'https://wabi-west-us3-a-primary-redirect.analysis.windows.net/', 'RequestId': '31988eb5-4cbe-44c0-9e2f-e75a3678b9e9', 'Request-Context': 'appId=cid-v1:4e244c7e-6d87-44a6-9022-c1aa461fa0c9'}
+{
+    "data": {
+        "factory_iot_datas": {
+            "items": [
+                {
+                    "Timestamp": "2025-11-11T17:36:24.407Z",
+                    "BuildingID": "BLD-MAR-003",
+                    "DeviceID": "EM-05B-G1"
+                },...
+```            
  
 Documentation:
 * https://learn.microsoft.com/en-us/fabric/data-engineering/get-started-api-graphql

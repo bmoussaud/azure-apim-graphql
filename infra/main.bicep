@@ -131,10 +131,10 @@ module fabricGraphqlApi 'modules/graphql-api.bicep' = {
       serviceUrl: fabricGraphQLEndpoint
       subscriptionRequired: true
       tags: ['fabric', 'api', 'graphql','factory']
-      policyXml: loadTextContent('../fabriq-graphql/fabric-graphql-policy.xml')
-      schema: loadTextContent('../fabriq-graphql/factory_schema.graphql')
+      policyXml: loadTextContent('../fabric-graphql/fabric-graphql-policy.xml')
+      schema: loadTextContent('../fabric-graphql/factory_schema.graphql')
       namedValues: {
-        'managed_identity_client_id': apimManagedIdentity.properties.clientId
+        managed_identity_client_id: apimManagedIdentity.properties.clientId
       }
       secretNamedValues: {}
     }
@@ -154,13 +154,14 @@ module fabricbRest2GraphqlApi 'modules/api.bicep' = {
       description: 'Rest to GraphQL Fabric API'
       displayName: 'Rest to GraphQL Fabric API'
       path: '/fabric-rest-to-graphql'
-      serviceUrl: 'https://api.github.com/graphql'
+      serviceUrl: fabricGraphQLEndpoint
       subscriptionRequired: true
-      tags: ['fabric', 'api', 'rest']
+      tags: ['fabric', 'api', 'rest','factory']
       policyXml: loadTextContent('../fabric-rest-2-graphql/fabric-rest-to-graphql-policy-base.xml')
       value: loadTextContent('../fabric-rest-2-graphql/swagger.json')
       namedValues: {
         managedIdentityClientId: apimManagedIdentity.properties.clientId
+        fabric_graphql_endpoint: endsWith(fabricGraphQLEndpoint, '/graphql') ? substring(fabricGraphQLEndpoint, 0, length(fabricGraphQLEndpoint) - 8) : fabricGraphQLEndpoint
       }
       secretNamedValues: {}
     }
