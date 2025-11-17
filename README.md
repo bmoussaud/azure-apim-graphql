@@ -179,6 +179,12 @@ The files in `fabric-rest-2-graphql` folder declare and implement two REST opera
 
 Both endpoints require an API key provided via the `Ocp-Apim-Subscription-Key` header or query string, as configured in Azure API Management.
 
+#### Test
+
+```bash
+cd fabric-rest-2-graphql
+./test-api.sh
+```
 
 ## 📚 Additional Resources
 
