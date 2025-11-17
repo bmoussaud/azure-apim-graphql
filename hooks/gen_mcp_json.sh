@@ -10,7 +10,7 @@ cat <<EOF > .vscode/mcp.json
 			"url": "${FABRIC_MCP_ENDPOINT}",
 			"type": "http",
 			"headers": {
-				"Ocp-Apim-Subscription-Key":"${FABRIC_APIM_SUBSCRIPTION_KEY}"
+				"Ocp-Apim-Subscription-Key":"${FABRIC_REST_APIM_SUBSCRIPTION_KEY}"
 			}
 		}
 	},
