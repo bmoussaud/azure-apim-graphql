@@ -31,23 +31,6 @@
     <!-- Customize the responses -->
     <outbound>
         <base />
-        
-        <!-- Add CORS headers if needed -->
-        <cors>
-            <allowed-origins>
-                <origin>*</origin>
-            </allowed-origins>
-            <allowed-methods>
-                <method>GET</method>
-                <method>POST</method>
-                <method>PUT</method>
-                <method>DELETE</method>
-                <method>OPTIONS</method>
-            </allowed-methods>
-            <allowed-headers>
-                <header>*</header>
-            </allowed-headers>
-        </cors>
     </outbound>
     
     <!-- Handle exceptions and customize error responses -->

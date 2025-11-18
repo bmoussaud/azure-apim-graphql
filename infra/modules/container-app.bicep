@@ -7,8 +7,8 @@ param location string = resourceGroup().location
 @description('Container Apps environment ID')
 param environmentId string
 
-@description('Container image')
-param containerImage string
+@description('User identity IDs for the container app.')
+param acrPullRoleName string = ''
 
 @description('Container port')
 param containerPort int = 8000
@@ -25,9 +25,6 @@ param minReplicas int = 0
 @description('Maximum replicas')
 param maxReplicas int = 10
 
-@description('Tags to apply to resources')
-param tags object = {}
-
 @description('Environment variables for the container')
 param environmentVariables array = []
 
@@ -37,13 +34,36 @@ param ingressEnabled bool = true
 @description('Enable external ingress')
 param externalIngress bool = true
 
+@description('Azure Container Registry name.')
+param containerRegistryName string
+
+resource uaiAcrPull 'Microsoft.ManagedIdentity/userAssignedIdentities@2022-01-31-preview' existing = {
+  name: acrPullRoleName
+}
+
+resource containerRegistry 'Microsoft.ContainerRegistry/registries@2023-01-01-preview' existing = {
+  name: containerRegistryName
+}
+
 resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
   name: containerAppName
   location: location
-  tags: tags
+  tags: { 'azd-service-name': containerAppName }
+   identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${uaiAcrPull.id}': {}
+    }
+  }
   properties: {
     managedEnvironmentId: environmentId
     configuration: {
+      registries: [
+        {
+          identity: uaiAcrPull.id
+          server: containerRegistry.properties.loginServer
+        }
+      ]
       ingress: ingressEnabled ? {
         external: externalIngress
         targetPort: containerPort
@@ -61,7 +81,7 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
       containers: [
         {
           name: containerAppName
-          image: containerImage
+          image: 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
           resources: {
             cpu: json(cpu)
             memory: memory

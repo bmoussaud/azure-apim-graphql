@@ -13,8 +13,6 @@ param githubToken string
 @description('Fabric GraphQL Endpoint URL')
 param fabricGraphQLEndpoint string = 'https://path-to-fabric-graphql-endpoint/graphql'
 
-@description('Container image for orders-rest-api')
-param ordersApiImage string = ''
 
 @description('Tags to apply to all resources')
 param tags object = {
@@ -28,6 +26,22 @@ var resourceToken = toLower(uniqueString(resourceGroup().id, environmentName, lo
 resource apimManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2024-11-30' = {
   name: 'apim-mi-${resourceToken}'
   location: location
+}
+
+resource uaiAcrPull 'Microsoft.ManagedIdentity/userAssignedIdentities@2024-11-30' = {
+  name: 'acr-pull'
+  location: location
+}
+
+@description('This allows the managed identity of the container app to access the registry, note scope is applied to the wider ResourceGroup not the ACR')
+resource uaiRbacAcrPull 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(resourceGroup().id, uaiAcrPull.id, 'ACR Pull Role RG')
+  scope: resourceGroup()
+  properties: {
+    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', '7f951dda-4ed3-4680-a7ca-43fe172d538d')
+    principalId: uaiAcrPull.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
 }
 
 
@@ -50,6 +64,18 @@ module logAnalyticsWorkspace 'modules/log-analytics-workspace.bicep' = {
   }
 }
 
+resource containerRegistry 'Microsoft.ContainerRegistry/registries@2023-07-01' = {
+  name: 'acr${resourceToken}'
+  location: location
+  sku: {
+    name: 'Basic'
+  }
+  properties: {
+    adminUserEnabled: false
+  }
+  tags: tags
+}
+
 module containerAppsEnvironment 'modules/container-apps-environment.bicep' = {
   name: 'container-apps-environment'
   params: {
@@ -60,13 +86,12 @@ module containerAppsEnvironment 'modules/container-apps-environment.bicep' = {
   }
 }
 
-module ordersRestApiContainerApp 'modules/container-app.bicep' = if (ordersApiImage != '') {
+module ordersRestApiContainerApp 'modules/container-app.bicep' =  {
   name: 'orders-rest-api-container-app'
   params: {
-    containerAppName: 'orders-rest-api-${resourceToken}'
+    containerAppName: 'orders-rest-api'
     location: location
     environmentId: containerAppsEnvironment.outputs.environmentId
-    containerImage: ordersApiImage
     containerPort: 8000
     cpu: '0.5'
     memory: '1.0Gi'
@@ -74,7 +99,8 @@ module ordersRestApiContainerApp 'modules/container-app.bicep' = if (ordersApiIm
     maxReplicas: 10
     ingressEnabled: true
     externalIngress: true
-    tags: tags
+    containerRegistryName: containerRegistry.name
+    acrPullRoleName: uaiAcrPull.name
   }
 }
 
@@ -232,7 +258,8 @@ module ordersApi 'modules/api.bicep' = {
       description: 'Orders Management REST API'
       displayName: 'Orders REST API'
       path: '/orders-api'
-      serviceUrl: ordersApiImage != '' ? ordersRestApiContainerApp!.outputs.containerAppUrl : 'https://orders-api-backend.example.com'
+      serviceUrl: ordersRestApiContainerApp!.outputs.containerAppUrl 
+      acrPullRoleName: uaiAcrPull.name
       subscriptionRequired: true
       tags: ['orders', 'api', 'rest']
       policyXml: loadTextContent('../orders-rest-api/orders-api-policy.xml')
@@ -245,6 +272,8 @@ module ordersApi 'modules/api.bicep' = {
 
 output APIM_GATEWAY_URL string = apiManagement.outputs.apiManagementProxyHostName
 output APIM_NAME string = apiManagement.outputs.name
+output AZURE_CONTAINER_REGISTRY_NAME string = containerRegistry.name
+output AZURE_CONTAINER_REGISTRY_ENDPOINT string = containerRegistry.properties.loginServer
 output FABRIC_ENDPOINT string = fabricGraphQLEndpoint
 output FABRIC_GRAPHQL_API_URL string = 'https://${apiManagement.outputs.apiManagementProxyHostName}/${fabricGraphqlApi.outputs.apiPath}'
 output FABRIC_GRAPQL_APIM_SUBSCRIPTION_KEY string = fabricGraphqlApi.outputs.subscriptionPrimaryKey
@@ -258,5 +287,5 @@ output OAUTH_TENANT_ID string = tenant().tenantId
 output SUBSCRIPTION_ID string = subscription().subscriptionId
 output ORDERS_API_URL string = 'https://${apiManagement.outputs.apiManagementProxyHostName}/${ordersApi.outputs.apiPath}'
 output ORDERS_APIM_SUBSCRIPTION_KEY string = ordersApi.outputs.subscriptionPrimaryKey
-output ORDERS_CONTAINER_APP_URL string = ordersApiImage != '' ? ordersRestApiContainerApp!.outputs.containerAppUrl : ''
-output ORDERS_CONTAINER_APP_FQDN string = ordersApiImage != '' ? ordersRestApiContainerApp!.outputs.containerAppFqdn : ''
+output ORDERS_CONTAINER_APP_URL string = ordersRestApiContainerApp!.outputs.containerAppUrl 
+output ORDERS_CONTAINER_APP_FQDN string = ordersRestApiContainerApp!.outputs.containerAppFqdn 
