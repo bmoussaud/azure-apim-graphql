@@ -37,6 +37,16 @@ param externalIngress bool = true
 @description('Azure Container Registry name.')
 param containerRegistryName string
 
+param isLatestImageExist bool = false
+
+module fetchLatestImage 'fetch-container-image.bicep' = {
+  name: '${containerAppName}-fetch-image'
+  params: {
+    exists: isLatestImageExist
+    name: containerAppName
+  }
+}
+
 resource uaiAcrPull 'Microsoft.ManagedIdentity/userAssignedIdentities@2022-01-31-preview' existing = {
   name: acrPullRoleName
 }
