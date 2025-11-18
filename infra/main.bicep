@@ -13,8 +13,8 @@ param githubToken string
 @description('Fabric GraphQL Endpoint URL')
 param fabricGraphQLEndpoint string = 'https://path-to-fabric-graphql-endpoint/graphql'
 
-@description('Orders API Backend URL')
-param ordersApiBackendUrl string = 'https://orders-api-backend.example.com'
+@description('Container image for orders-rest-api')
+param ordersApiImage string = ''
 
 @description('Tags to apply to all resources')
 param tags object = {
@@ -46,6 +46,34 @@ module logAnalyticsWorkspace 'modules/log-analytics-workspace.bicep' = {
   params: {
     location: location
     logAnalyticsName: 'log-analytics-${resourceToken}'
+    tags: tags
+  }
+}
+
+module containerAppsEnvironment 'modules/container-apps-environment.bicep' = {
+  name: 'container-apps-environment'
+  params: {
+    environmentName: 'cae-${resourceToken}'
+    location: location
+    logAnalyticsWorkspaceId: logAnalyticsWorkspace.outputs.id
+    tags: tags
+  }
+}
+
+module ordersRestApiContainerApp 'modules/container-app.bicep' = if (ordersApiImage != '') {
+  name: 'orders-rest-api-container-app'
+  params: {
+    containerAppName: 'orders-rest-api-${resourceToken}'
+    location: location
+    environmentId: containerAppsEnvironment.outputs.environmentId
+    containerImage: ordersApiImage
+    containerPort: 8000
+    cpu: '0.5'
+    memory: '1.0Gi'
+    minReplicas: 0
+    maxReplicas: 10
+    ingressEnabled: true
+    externalIngress: true
     tags: tags
   }
 }
@@ -204,7 +232,7 @@ module ordersApi 'modules/api.bicep' = {
       description: 'Orders Management REST API'
       displayName: 'Orders REST API'
       path: '/orders-api'
-      serviceUrl: ordersApiBackendUrl
+      serviceUrl: ordersApiImage != '' ? ordersRestApiContainerApp!.outputs.containerAppUrl : 'https://orders-api-backend.example.com'
       subscriptionRequired: true
       tags: ['orders', 'api', 'rest']
       policyXml: loadTextContent('../orders-rest-api/orders-api-policy.xml')
@@ -230,3 +258,5 @@ output OAUTH_TENANT_ID string = tenant().tenantId
 output SUBSCRIPTION_ID string = subscription().subscriptionId
 output ORDERS_API_URL string = 'https://${apiManagement.outputs.apiManagementProxyHostName}/${ordersApi.outputs.apiPath}'
 output ORDERS_APIM_SUBSCRIPTION_KEY string = ordersApi.outputs.subscriptionPrimaryKey
+output ORDERS_CONTAINER_APP_URL string = ordersApiImage != '' ? ordersRestApiContainerApp!.outputs.containerAppUrl : ''
+output ORDERS_CONTAINER_APP_FQDN string = ordersApiImage != '' ? ordersRestApiContainerApp!.outputs.containerAppFqdn : ''
