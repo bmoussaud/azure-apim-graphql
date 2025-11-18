@@ -21,13 +21,13 @@ Using `uv` (recommended):
 cd orders-rest-api
 uv venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-uv pip install -e .
+uv sync
 ```
 
 ## Running the API
 
 ```bash
-python main.py
+uv run main.py
 ```
 
 The API will be available at `http://localhost:8000`
