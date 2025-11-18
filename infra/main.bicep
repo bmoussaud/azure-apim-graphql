@@ -13,6 +13,9 @@ param githubToken string
 @description('Fabric GraphQL Endpoint URL')
 param fabricGraphQLEndpoint string = 'https://path-to-fabric-graphql-endpoint/graphql'
 
+@description('Orders API Backend URL')
+param ordersApiBackendUrl string = 'https://orders-api-backend.example.com'
+
 @description('Tags to apply to all resources')
 param tags object = {
   Environment: environmentName
@@ -189,6 +192,29 @@ module sensorDetailOperation 'modules/policy.bicep' = {
   }
 }
 
+module ordersApi 'modules/api.bicep' = {
+  name: 'orders-api'
+  params: {
+    apimName: apiManagement.outputs.name
+    appInsightsId: applicationInsights.outputs.aiId
+    appInsightsInstrumentationKey: applicationInsights.outputs.instrumentationKey
+    
+    api: {
+      name: 'orders-api'
+      description: 'Orders Management REST API'
+      displayName: 'Orders REST API'
+      path: '/orders-api'
+      serviceUrl: ordersApiBackendUrl
+      subscriptionRequired: true
+      tags: ['orders', 'api', 'rest']
+      policyXml: loadTextContent('../orders-rest-api/orders-api-policy.xml')
+      value: loadTextContent('../orders-rest-api/orders-api-swagger.json')
+      namedValues: {}
+      secretNamedValues: {}
+    }
+  }
+}
+
 output APIM_GATEWAY_URL string = apiManagement.outputs.apiManagementProxyHostName
 output APIM_NAME string = apiManagement.outputs.name
 output FABRIC_ENDPOINT string = fabricGraphQLEndpoint
@@ -202,3 +228,5 @@ output GITHUB_GRAPHQL_API_URL string = 'https://${apiManagement.outputs.apiManag
 output GITHUB_TOKEN string = githubToken
 output OAUTH_TENANT_ID string = tenant().tenantId
 output SUBSCRIPTION_ID string = subscription().subscriptionId
+output ORDERS_API_URL string = 'https://${apiManagement.outputs.apiManagementProxyHostName}/${ordersApi.outputs.apiPath}'
+output ORDERS_APIM_SUBSCRIPTION_KEY string = ordersApi.outputs.subscriptionPrimaryKey
