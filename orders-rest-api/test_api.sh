@@ -4,6 +4,7 @@
 set -e
 
 API_BASE_URL="${API_BASE_URL:-http://localhost:8000}"
+AUTH_HEADER="X-Auth-Token: test-token"
 
 echo "Testing Orders REST API at ${API_BASE_URL}"
 echo "=========================================="
@@ -18,26 +19,32 @@ echo ""
 echo "2. Testing root endpoint..."
 curl -s "${API_BASE_URL}/" | python -m json.tool
 
-# Test list all orders
+# Test list all orders WITHOUT auth header (should fail with 403)
 echo ""
-echo "3. Testing list all orders..."
-curl -s "${API_BASE_URL}/orders" | python -m json.tool | head -50
+echo "3a. Testing list all orders WITHOUT auth header (should return 403)..."
+curl -s "${API_BASE_URL}/orders" -w "\nHTTP Status: %{http_code}\n" | python -m json.tool || true
+
+# Test list all orders WITH auth header
+echo ""
+echo "3b. Testing list all orders WITH auth header..."
+curl -s -H "${AUTH_HEADER}" "${API_BASE_URL}/orders" | python -m json.tool | head -50
 
 # Test list orders with status filter
 echo ""
 echo "4. Testing list orders with status filter (pending)..."
-curl -s "${API_BASE_URL}/orders?status_filter=pending&limit=3" | python -m json.tool
+curl -s -H "${AUTH_HEADER}" "${API_BASE_URL}/orders?status_filter=pending&limit=3" | python -m json.tool
 
 # Test get specific order
 echo ""
 echo "5. Testing get specific order (ORD-2024-001)..."
-curl -s "${API_BASE_URL}/orders/ORD-2024-001" | python -m json.tool
+curl -s -H "${AUTH_HEADER}" "${API_BASE_URL}/orders/ORD-2024-001" | python -m json.tool
 
 # Test create order
 echo ""
 echo "6. Testing create new order..."
 NEW_ORDER=$(curl -s -X POST "${API_BASE_URL}/orders" \
   -H "Content-Type: application/json" \
+  -H "${AUTH_HEADER}" \
   -d '{
     "customer_id": "CUST-999",
     "customer_name": "Test Customer",
@@ -64,22 +71,23 @@ echo ""
 echo "7. Testing update order status..."
 curl -s -X PUT "${API_BASE_URL}/orders/${ORDER_ID}" \
   -H "Content-Type: application/json" \
+  -H "${AUTH_HEADER}" \
   -d '{"status": "processing", "notes": "Updated from test script"}' | python -m json.tool
 
 # Test get updated order
 echo ""
 echo "8. Verifying order was updated..."
-curl -s "${API_BASE_URL}/orders/${ORDER_ID}" | python -m json.tool
+curl -s -H "${AUTH_HEADER}" "${API_BASE_URL}/orders/${ORDER_ID}" | python -m json.tool
 
 # Test delete order
 echo ""
 echo "9. Testing delete order..."
-curl -s -X DELETE "${API_BASE_URL}/orders/${ORDER_ID}" -w "\nHTTP Status: %{http_code}\n"
+curl -s -X DELETE "${API_BASE_URL}/orders/${ORDER_ID}" -H "${AUTH_HEADER}" -w "\nHTTP Status: %{http_code}\n"
 
 # Verify order was deleted
 echo ""
 echo "10. Verifying order was deleted (should return 404)..."
-curl -s "${API_BASE_URL}/orders/${ORDER_ID}" -w "\nHTTP Status: %{http_code}\n" | python -m json.tool || true
+curl -s -H "${AUTH_HEADER}" "${API_BASE_URL}/orders/${ORDER_ID}" -w "\nHTTP Status: %{http_code}\n" | python -m json.tool || true
 
 echo ""
 echo "=========================================="
