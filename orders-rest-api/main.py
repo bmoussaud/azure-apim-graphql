@@ -1,7 +1,7 @@
 """
 Orders REST API - CRUD operations for order management
 """
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, Header, Depends
 from fastapi.responses import JSONResponse
 from typing import List, Optional
 from datetime import datetime
@@ -14,6 +14,19 @@ app = FastAPI(
     description="REST API for managing orders (CRUD operations)",
     version="1.0.0"
 )
+
+
+def verify_auth_header(x_auth_token: Optional[str] = Header(None)):
+    """
+    Verify that the X-Auth-Token header is present.
+    Returns 403 if the header is missing.
+    """
+    if x_auth_token is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Missing authentication header"
+        )
+    return x_auth_token
 
 
 @app.get("/")
@@ -42,7 +55,8 @@ async def health_check():
 @app.get("/orders", response_model=List[Order])
 async def list_orders(
     status_filter: Optional[str] = None,
-    limit: Optional[int] = None
+    limit: Optional[int] = None,
+    auth: str = Depends(verify_auth_header)
 ):
     """
     List all orders with optional filtering
@@ -65,7 +79,7 @@ async def list_orders(
 
 
 @app.get("/orders/{order_id}", response_model=Order)
-async def get_order(order_id: str):
+async def get_order(order_id: str, auth: str = Depends(verify_auth_header)):
     """
     Get a specific order by ID
     
@@ -82,7 +96,7 @@ async def get_order(order_id: str):
 
 
 @app.post("/orders", response_model=Order, status_code=status.HTTP_201_CREATED)
-async def create_new_order(order: OrderCreate):
+async def create_new_order(order: OrderCreate, auth: str = Depends(verify_auth_header)):
     """
     Create a new order
     
@@ -94,7 +108,7 @@ async def create_new_order(order: OrderCreate):
 
 
 @app.put("/orders/{order_id}", response_model=Order)
-async def update_existing_order(order_id: str, order: OrderUpdate):
+async def update_existing_order(order_id: str, order: OrderUpdate, auth: str = Depends(verify_auth_header)):
     """
     Update an existing order
     
@@ -112,7 +126,7 @@ async def update_existing_order(order_id: str, order: OrderUpdate):
 
 
 @app.delete("/orders/{order_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_existing_order(order_id: str):
+async def delete_existing_order(order_id: str, auth: str = Depends(verify_auth_header)):
     """
     Delete an order
     
