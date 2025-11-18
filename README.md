@@ -186,6 +186,145 @@ cd fabric-rest-2-graphql
 ./test-api.sh
 ```
 
+## Orders REST API
+
+The files in `orders-rest-api` folder implement a complete REST API for managing orders with full CRUD (Create, Read, Update, Delete) operations.
+
+### Features
+
+- **List Orders**: Get all orders with optional filtering by status and limit
+- **Get Order**: Retrieve a specific order by ID
+- **Create Order**: Create a new order
+- **Update Order**: Update order status, shipping address, or notes
+- **Delete Order**: Remove an order from the system
+- **Fake Data**: Automatically generates 20 sample orders for testing
+- **FastAPI**: Modern Python framework with automatic OpenAPI documentation
+- **Pydantic**: Data validation and serialization
+
+### Local Development and Testing
+
+#### Installation
+
+```bash
+cd orders-rest-api
+python3 -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+pip install fastapi uvicorn pydantic
+```
+
+#### Running the API
+
+```bash
+python main.py
+```
+
+The API will be available at `http://localhost:8000`
+
+- Interactive API docs (Swagger UI): `http://localhost:8000/docs`
+- Alternative API docs (ReDoc): `http://localhost:8000/redoc`
+- OpenAPI schema: `http://localhost:8000/openapi.json`
+
+#### Test
+
+```bash
+cd orders-rest-api
+./test_api.sh
+```
+
+### API Operations
+
+#### List Orders
+```bash
+GET /orders?status_filter=pending&limit=10
+```
+
+Optional query parameters:
+- `status_filter`: Filter by status (pending, processing, shipped, delivered, cancelled)
+- `limit`: Limit the number of results
+
+#### Get Order by ID
+```bash
+GET /orders/{order_id}
+```
+
+Example:
+```bash
+curl http://localhost:8000/orders/ORD-2024-001
+```
+
+#### Create Order
+```bash
+POST /orders
+Content-Type: application/json
+
+{
+  "customer_id": "CUST-12345",
+  "customer_name": "John Doe",
+  "customer_email": "john.doe@example.com",
+  "items": [
+    {
+      "product_id": "PROD-001",
+      "product_name": "Laptop",
+      "quantity": 1,
+      "unit_price": 999.99,
+      "total_price": 999.99
+    }
+  ],
+  "shipping_address": "123 Main St, City, State 12345",
+  "notes": "Please handle with care"
+}
+```
+
+#### Update Order
+```bash
+PUT /orders/{order_id}
+Content-Type: application/json
+
+{
+  "status": "processing",
+  "notes": "Updated notes"
+}
+```
+
+#### Delete Order
+```bash
+DELETE /orders/{order_id}
+```
+
+### Order Status Values
+
+- `pending`: Order has been placed but not yet processed
+- `processing`: Order is being prepared
+- `shipped`: Order has been shipped
+- `delivered`: Order has been delivered
+- `cancelled`: Order has been cancelled
+
+### Sample Data
+
+The API includes a fake data generator that creates 20 realistic orders with:
+- 10 different customers
+- 10 different products (laptops, accessories, peripherals)
+- Various order statuses based on order age
+- Calculated totals (subtotal, tax at 8%, shipping)
+- Free shipping for orders over $100
+
+### Deployment with Azure API Management
+
+The Orders API is integrated with Azure API Management. After deploying the infrastructure:
+
+1. Deploy your Orders API backend to Azure (e.g., Azure App Service, Container Apps)
+2. Update the `ordersApiBackendUrl` parameter in `infra/main.parameters.json`
+3. Run `azd provision` to update the APIM configuration
+
+Access the API through APIM:
+```bash
+export ORDERS_API_URL=<from azd env>
+export ORDERS_APIM_SUBSCRIPTION_KEY=<from azd env>
+
+curl "${ORDERS_API_URL}/orders" \
+  -H "Ocp-Apim-Subscription-Key: ${ORDERS_APIM_SUBSCRIPTION_KEY}"
+```
+
 ## 📚 Additional Resources
 
 - [GitHub GraphQL API Documentation](https://docs.github.com/en/graphql)
