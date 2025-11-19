@@ -6,6 +6,7 @@ from typing import List, Optional
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Request, status
 from fastapi.responses import JSONResponse
+from fastapi.openapi.utils import get_openapi
 import uvicorn
 
 from models import Order, OrderCreate, OrderUpdate
@@ -58,6 +59,12 @@ def verify_auth_header(
             detail="Missing authentication header"
         )
     return x_auth_token
+
+
+@app.get("/openapi.json", include_in_schema=False)
+async def openapi_json():
+    """Expose OpenAPI schema at a fixed `/openapi.json` path."""
+    return app.openapi()
 
 
 @app.get("/")
