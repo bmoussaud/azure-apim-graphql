@@ -1,27 +1,58 @@
-"""
-Orders REST API - CRUD operations for order management
-"""
-from fastapi import FastAPI, HTTPException, status, Header, Depends
-from fastapi.responses import JSONResponse
-from typing import List, Optional
+"""Orders REST API - CRUD operations for order management"""
+import logging
+from contextlib import asynccontextmanager
 from datetime import datetime
+from typing import List, Optional
+
+from fastapi import Depends, FastAPI, Header, HTTPException, Request, status
+from fastapi.responses import JSONResponse
 import uvicorn
+
 from models import Order, OrderCreate, OrderUpdate
-from fake_data import get_orders, get_order_by_id, create_order, update_order, delete_order
+from fake_data import (
+    create_order,
+    delete_order,
+    get_order_by_id,
+    get_orders,
+    update_order,
+)
+
+
+logger = logging.getLogger("orders-api")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Configure logging at startup using FastAPI lifespan events."""
+    if not logging.getLogger().handlers:
+        logging.basicConfig(level=logging.INFO)
+    yield
+
 
 app = FastAPI(
     title="Orders REST API",
     description="REST API for managing orders (CRUD operations)",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan,
 )
 
 
-def verify_auth_header(x_auth_token: Optional[str] = Header(None)):
+def verify_auth_header(
+    request: Request, x_auth_token: Optional[str] = Header(None)
+):
     """
     Verify that the X-Auth-Token header is present.
     Returns 403 if the header is missing.
     """
     if x_auth_token is None:
+        logger.error(
+            "Unauthorized request: missing X-Auth-Token",
+            extra={
+                "path": request.url.path,
+                "method": request.method,
+                "client": request.client.host if request.client else None,
+            },
+        )
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Missing authentication header"

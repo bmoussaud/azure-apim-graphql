@@ -95,8 +95,6 @@ module ordersRestApiContainerApp 'modules/container-app.bicep' =  {
     containerPort: 8000
     cpu: '0.5'
     memory: '1.0Gi'
-    minReplicas: 0
-    maxReplicas: 10
     ingressEnabled: true
     externalIngress: true
     containerRegistryName: containerRegistry.name

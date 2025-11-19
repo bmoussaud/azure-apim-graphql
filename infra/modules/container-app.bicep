@@ -20,7 +20,7 @@ param cpu string = '0.5'
 param memory string = '1.0Gi'
 
 @description('Minimum replicas')
-param minReplicas int = 0
+param minReplicas int = 1
 
 @description('Maximum replicas')
 param maxReplicas int = 10
