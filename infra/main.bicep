@@ -264,7 +264,9 @@ module ordersApi 'modules/api.bicep' = {
       tags: ['orders', 'api', 'rest']
       policyXml: loadTextContent('../orders-rest-api/orders-api-policy.xml')
       value: loadTextContent('../orders-rest-api/orders-api-swagger.json')
-      namedValues: {}
+      namedValues: {
+        ordersApiKey: '1111-22222-33333-44444'
+      }
       secretNamedValues: {}
     }
   }

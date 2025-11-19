@@ -114,6 +114,12 @@ DELETE /orders/{order_id}
 
 ## Testing with curl
 
+
+```bash
+azd env get-values > .env
+./test_api [/apim]
+```
+
 ```bash
 # List all orders
 curl http://localhost:8000/orders

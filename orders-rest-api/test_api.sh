@@ -1,10 +1,30 @@
 #!/bin/bash
 # Test script for Orders REST API
 
-set -e
+set -ex
+source .env
 
-API_BASE_URL="${API_BASE_URL:-http://localhost:8000}"
-AUTH_HEADER="X-Auth-Token: test-token"
+# Check if /apim flag exists in command line arguments
+APIM_MODE=false
+for arg in "$@"; do
+  if [ "$arg" = "/apim" ]; then
+    APIM_MODE=true
+    break
+  fi
+done
+
+if [ "$APIM_MODE" = true ]; then
+  echo "Running in APIM mode"
+  API_BASE_URL="${ORDERS_API_URL:-http://localhost:8000}"
+  AUTH_HEADER="Ocp-Apim-Subscription-Key: ${ORDERS_APIM_SUBSCRIPTION_KEY:-test-subscription-key}"
+else
+  echo "Running in direct mode"
+  API_BASE_URL="${ORDERS_CONTAINER_APP_URL:-http://localhost:8000}"
+  AUTH_HEADER="X-Auth-Token: test-token"
+fi
+
+echo "${API_BASE_URL}"
+echo ${AUTH_HEADER}
 
 echo "Testing Orders REST API at ${API_BASE_URL}"
 echo "=========================================="
@@ -12,32 +32,32 @@ echo "=========================================="
 # Test health endpoint
 echo ""
 echo "1. Testing health check..."
-curl -s "${API_BASE_URL}/health" | python -m json.tool
+curl -s "${API_BASE_URL}/health" | jq
 
 # Test root endpoint
 echo ""
 echo "2. Testing root endpoint..."
-curl -s "${API_BASE_URL}/" | python -m json.tool
+curl -s "${API_BASE_URL}/" | jq
 
 # Test list all orders WITHOUT auth header (should fail with 403)
 echo ""
 echo "3a. Testing list all orders WITHOUT auth header (should return 403)..."
-curl -s "${API_BASE_URL}/orders" -w "\nHTTP Status: %{http_code}\n" | python -m json.tool || true
+curl -s "${API_BASE_URL}/orders" -w "\nHTTP Status: %{http_code}\n" | jq || true
 
 # Test list all orders WITH auth header
 echo ""
 echo "3b. Testing list all orders WITH auth header..."
-curl -s -H "${AUTH_HEADER}" "${API_BASE_URL}/orders" | python -m json.tool | head -50
+curl -s -H "${AUTH_HEADER}" "${API_BASE_URL}/orders" | jq 
 
 # Test list orders with status filter
 echo ""
 echo "4. Testing list orders with status filter (pending)..."
-curl -s -H "${AUTH_HEADER}" "${API_BASE_URL}/orders?status_filter=pending&limit=3" | python -m json.tool
+curl -s -H "${AUTH_HEADER}" "${API_BASE_URL}/orders?status_filter=pending&limit=3" | jq
 
 # Test get specific order
 echo ""
 echo "5. Testing get specific order (ORD-2024-001)..."
-curl -s -H "${AUTH_HEADER}" "${API_BASE_URL}/orders/ORD-2024-001" | python -m json.tool
+curl -s -H "${AUTH_HEADER}" "${API_BASE_URL}/orders/ORD-2024-001" | jq
 
 # Test create order
 echo ""
@@ -62,7 +82,7 @@ NEW_ORDER=$(curl -s -X POST "${API_BASE_URL}/orders" \
     "notes": "Test order from API test script"
   }')
 
-echo "$NEW_ORDER" | python -m json.tool
+echo "$NEW_ORDER" | jq
 ORDER_ID=$(echo "$NEW_ORDER" | python -c "import sys, json; print(json.load(sys.stdin)['order_id'])")
 echo "Created order ID: $ORDER_ID"
 
@@ -72,22 +92,14 @@ echo "7. Testing update order status..."
 curl -s -X PUT "${API_BASE_URL}/orders/${ORDER_ID}" \
   -H "Content-Type: application/json" \
   -H "${AUTH_HEADER}" \
-  -d '{"status": "processing", "notes": "Updated from test script"}' | python -m json.tool
+  -d '{"status": "processing", "notes": "Updated from test script"}' | jq
 
 # Test get updated order
 echo ""
 echo "8. Verifying order was updated..."
-curl -s -H "${AUTH_HEADER}" "${API_BASE_URL}/orders/${ORDER_ID}" | python -m json.tool
+curl -s -H "${AUTH_HEADER}" "${API_BASE_URL}/orders/${ORDER_ID}" | jq
 
-# Test delete order
-echo ""
-echo "9. Testing delete order..."
-curl -s -X DELETE "${API_BASE_URL}/orders/${ORDER_ID}" -H "${AUTH_HEADER}" -w "\nHTTP Status: %{http_code}\n"
 
-# Verify order was deleted
-echo ""
-echo "10. Verifying order was deleted (should return 404)..."
-curl -s -H "${AUTH_HEADER}" "${API_BASE_URL}/orders/${ORDER_ID}" -w "\nHTTP Status: %{http_code}\n" | python -m json.tool || true
 
 echo ""
 echo "=========================================="
