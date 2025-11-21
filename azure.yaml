@@ -2,15 +2,6 @@
 
 name: azure-apim-graphql
 
-services:
-  orders-rest-api:
-    project: ./orders-rest-api
-    language: python
-    host: containerapp
-    docker:
-      path: ./Dockerfile
-      context: ./
-
 infra:
   provider: bicep
   path: infra
@@ -19,9 +10,3 @@ parameters:
   githubToken:
     secret: true
 
-
-hooks:
-  postprovision:
-    # Execute the root script to generate MCP JSON artifacts after infra is provisioned.
-    - shell: sh
-      run: ./hooks/gen_mcp_json.sh

@@ -139,6 +139,9 @@ resource apiPolicy 'Microsoft.ApiManagement/service/apis/policies@2024-06-01-pre
     format: 'rawxml' // only use 'rawxml' for policies as it's what APIM expects and means we don't need to escape XML characters
     value: api.policyXml
   }
+  dependsOn:[
+    namedValues, secretNamedValues
+  ]
 }
 
 // https://learn.microsoft.com/azure/templates/microsoft.apimanagement/service/subscriptions

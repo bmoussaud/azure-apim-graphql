@@ -19,8 +19,7 @@ param skuName string
 @description('The number of worker instances of your API Management service that should be provisioned.')
 param skuCount int
 
-@description('The resource ID of the managed identity to be assigned to the API Management service instance.')
-param managedIdentityResourceId string
+
 
 param tags object = {}
 
@@ -35,12 +34,7 @@ resource apiManagementService 'Microsoft.ApiManagement/service@2024-10-01-previe
     name: skuName
     capacity: skuCount
   }
-  identity: {
-    type: 'UserAssigned'
-    userAssignedIdentities: {
-      '${managedIdentityResourceId}': {}
-    }
-  }
+ 
   tags: tags
   properties: {
     publisherName: publisherName
