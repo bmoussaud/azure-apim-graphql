@@ -56,7 +56,7 @@ def verify_auth_header(
         )
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Missing authentication header"
+            detail="Missing authentication header (X-Auth-Token)"
         )
     return x_auth_token
 
